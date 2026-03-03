@@ -1,0 +1,125 @@
+/* CustomTheme admin — focused on readability for many fields */
+#ct-color-grid,
+#ct-advanced-color-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 10px;
+}
+
+.ct-subtitle {
+    margin: 18px 0 8px;
+    font-size: 16px;
+    line-height: 1.3;
+    color: #2f3540;
+}
+
+.ct-color-picker-lg {
+    width: 76px;
+    height: 52px;
+    border: 1px solid #bcc2cb;
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 2px;
+    display: block;
+    margin-top: 6px;
+    background: #fff;
+}
+
+.ct-color-cell {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border: 1px solid #d8dde4;
+    border-radius: 8px;
+    padding: 10px 10px 9px;
+    background: #fff;
+    min-height: 84px;
+}
+
+.ct-color-cell-advanced {
+    min-height: 74px;
+}
+
+.ct-color-input {
+    width: 48px;
+    height: 38px;
+    flex-shrink: 0;
+    border: 1px solid #aeb7c3;
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 2px;
+    background: #fff;
+}
+
+.ct-color-label {
+    font-size: 13px;
+    color: #27323d;
+    line-height: 1.3;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 3px;
+    position: static !important;
+    transform: none !important;
+    font-size: 13px !important;
+    color: #27323d !important;
+    white-space: normal !important;
+}
+
+.ct-color-meta {
+    flex: 1;
+    min-width: 0;
+}
+
+.ct-color-help {
+    display: block;
+    margin-top: 2px;
+    font-size: 12px;
+    line-height: 1.35;
+    color: #5f6d7d;
+}
+
+.ct-inline-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.ct-text-input {
+    width: 100%;
+    height: 38px;
+    border: 1px solid #c4c9d1 !important;
+    border-radius: 6px !important;
+    padding: 6px 10px !important;
+    margin: 4px 0 6px !important;
+    background: #fff !important;
+}
+
+/* ── Status messages ── */
+.ct-status {
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    display: inline-block;
+    min-height: 20px;
+}
+
+.ct-status.ct-ok {
+    background: #e8f5e9;
+    color: #1b5e20;
+}
+
+.ct-status.ct-err {
+    background: #ffebee;
+    color: #b71c1c;
+}
+
+/* ── Background preview thumbnail ── */
+.ct-bg-thumbnail {
+    max-width: 180px;
+    max-height: 100px;
+    object-fit: cover;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    display: block;
+}

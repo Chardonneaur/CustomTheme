@@ -1,0 +1,12 @@
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+node_modules/
+vendor/
+
+# Uploaded user files — runtime data, must not be committed
+data/background/bg.*
+data/fonts/custom-font.*

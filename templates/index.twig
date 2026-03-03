@@ -1,0 +1,216 @@
+{% extends 'admin.twig' %}
+
+{% set title %}{{ 'CustomTheme_PageTitle'|translate }}{% endset %}
+
+{% block content %}
+<div id="customThemeAdmin">
+
+    <div id="notificationContainer"></div>
+
+    {# ============================================================
+       SECTION 1 — COLOURS
+       ============================================================ #}
+    <div vue-entry="CoreHome.ContentBlock" content-title="{{ 'CustomTheme_SectionColors'|translate }}">
+        <p>{{ 'CustomTheme_SectionColorsDesc'|translate }}</p>
+
+        <div class="form-group row">
+            <div class="col s12 m3">
+                <label for="ct-primary-color">{{ 'CustomTheme_PrimaryColor'|translate }}</label>
+                <br />
+                <input type="color" id="ct-primary-color"
+                       value="{{ storedColors['colorBrand'] is defined and storedColors['colorBrand'] != '' ? storedColors['colorBrand'] : '#3450A3' }}"
+                       class="ct-color-picker-lg" />
+            </div>
+            <div class="col s12 m9" style="display:flex;align-items:flex-end;padding-bottom:4px;gap:10px;flex-wrap:wrap;">
+                <button type="button" class="btn" id="ct-generate-btn">{{ 'CustomTheme_GeneratePalette'|translate }}</button>
+                <span id="ct-status-generate" class="ct-status"></span>
+            </div>
+        </div>
+
+        <div id="ct-color-grid">
+            {% for prop in colorProperties %}
+            {% set details = colorFieldDetails[prop] is defined ? colorFieldDetails[prop] : {'label': prop, 'help': prop} %}
+            <div class="ct-color-cell">
+                <input type="color"
+                       id="ct-color-{{ prop }}"
+                       class="ct-color-input"
+                       data-prop="{{ prop }}"
+                       value="{{ storedColors[prop] is defined and storedColors[prop] != '' ? storedColors[prop] : '#888888' }}" />
+                <div class="ct-color-meta">
+                    <label for="ct-color-{{ prop }}" class="ct-color-label" title="{{ details.label }}">{{ details.label }}</label>
+                    <span class="ct-color-help">{{ details.help }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <h3 class="ct-subtitle">{{ 'CustomTheme_SectionAdvancedColors'|translate }}</h3>
+        <div id="ct-advanced-color-grid">
+            {% for prop in advancedColorProperties %}
+            {% set details = advancedColorFieldDetails[prop] is defined ? advancedColorFieldDetails[prop] : {'label': prop, 'help': prop} %}
+            <div class="ct-color-cell ct-color-cell-advanced">
+                <input type="color"
+                       id="ct-color-{{ prop }}"
+                       class="ct-color-input"
+                       data-prop="{{ prop }}"
+                       value="{{ storedColors[prop] is defined and storedColors[prop] != '' ? storedColors[prop] : '#888888' }}" />
+                <div class="ct-color-meta">
+                    <label for="ct-color-{{ prop }}" class="ct-color-label" title="{{ details.label }}">{{ details.label }}</label>
+                    <span class="ct-color-help">{{ details.help }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="form-group row" style="margin-top:16px;">
+            <div class="col s12" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <button type="button" class="btn" id="ct-save-colors-btn">{{ 'CustomTheme_SaveColors'|translate }}</button>
+                <button type="button" class="btn" id="ct-reset-btn">{{ 'CustomTheme_ResetTheme'|translate }}</button>
+                <span id="ct-status-colors" class="ct-status"></span>
+            </div>
+        </div>
+    </div>
+
+    {# ============================================================
+       SECTION 2 — BACKGROUND IMAGE
+       ============================================================ #}
+    <div vue-entry="CoreHome.ContentBlock" content-title="{{ 'CustomTheme_SectionBackground'|translate }}">
+        <p>{{ 'CustomTheme_SectionBackgroundDesc'|translate }}</p>
+        <p>{{ 'CustomTheme_SectionBackgroundHowto'|translate }}</p>
+
+        <div id="ct-bg-preview" class="form-group row" {% if backgroundProxyUrl == '' %}style="display:none;"{% endif %}>
+            <div class="col s12" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                <img src="{{ backgroundProxyUrl }}" alt="" class="ct-bg-thumbnail" />
+                <button type="button" class="btn" id="ct-remove-bg-btn">{{ 'CustomTheme_RemoveBackground'|translate }}</button>
+            </div>
+        </div>
+
+        <form id="ct-bg-upload-form" enctype="multipart/form-data">
+            <div class="form-group row">
+                <div class="col s12 m8" style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;">
+                    <input type="file" name="background" id="ct-bg-file" accept="image/png,image/jpeg,image/gif,image/webp" class="browser-default" style="flex:1;min-width:200px;" />
+                    <button type="submit" class="btn">{{ 'CustomTheme_UploadImage'|translate }}</button>
+                </div>
+            </div>
+        </form>
+        <div class="form-group row">
+            <div class="col s12">
+                <span id="ct-status-bg-upload" class="ct-status"></span>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col s12 m4">
+                <label for="ct-bg-style">{{ 'CustomTheme_BackgroundStyleLabel'|translate }}</label>
+                <select id="ct-bg-style" class="browser-default">
+                    <option value="cover"   {% if backgroundStyle == 'cover' %}selected{% endif %}>{{ 'CustomTheme_BackgroundStyleCover'|translate }}</option>
+                    <option value="contain" {% if backgroundStyle == 'contain' %}selected{% endif %}>{{ 'CustomTheme_BackgroundStyleContain'|translate }}</option>
+                    <option value="repeat"  {% if backgroundStyle == 'repeat' %}selected{% endif %}>{{ 'CustomTheme_BackgroundStyleRepeat'|translate }}</option>
+                </select>
+                <span class="form-description">{{ 'CustomTheme_SectionBackgroundStyleHelp'|translate }}</span>
+            </div>
+            <div class="col s12 m4">
+                <label for="ct-overlay-opacity">{{ 'CustomTheme_OverlayOpacity'|translate }}: <strong><span id="ct-opacity-val">{{ backgroundOverlayOpacity }}</span></strong></label>
+                <input type="range" id="ct-overlay-opacity" min="0" max="0.9" step="0.05" value="{{ backgroundOverlayOpacity }}" class="browser-default" />
+                <span class="form-description">{{ 'CustomTheme_SectionBackgroundOverlayHelp'|translate }}</span>
+            </div>
+            <div class="col s12 m4">
+                <label for="ct-blur">{{ 'CustomTheme_BlurAmount'|translate }}: <strong><span id="ct-blur-val">{{ backgroundBlur }}</span> px</strong></label>
+                <input type="range" id="ct-blur" min="0" max="20" step="1" value="{{ backgroundBlur }}" class="browser-default" />
+                <span class="form-description">{{ 'CustomTheme_SectionBackgroundBlurHelp'|translate }}</span>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col s12" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <button type="button" class="btn" id="ct-save-bg-btn">{{ 'CustomTheme_SaveBackgroundSettings'|translate }}</button>
+                <span id="ct-status-bg" class="ct-status"></span>
+            </div>
+        </div>
+    </div>
+
+    {# ============================================================
+       SECTION 3 — TYPOGRAPHY
+       ============================================================ #}
+    <div vue-entry="CoreHome.ContentBlock" content-title="{{ 'CustomTheme_SectionTypography'|translate }}">
+        <p>{{ 'CustomTheme_SectionTypographyDesc'|translate }}</p>
+
+        <div class="form-group row">
+            <div class="col s12 m8">
+                <label for="ct-font-family">{{ 'CustomTheme_FontFamilyBaseLabel'|translate }}</label>
+                <select id="ct-font-family" class="browser-default ct-text-input">
+                    <option value="">{{ 'CustomTheme_FontFamilyUseThemeDefault'|translate }}</option>
+                    {% for stack, label in fontFamilyOptions %}
+                        <option value="{{ stack|e('html_attr') }}" {% if fontFamilyBase == stack %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <span class="form-description">{{ 'CustomTheme_FontFamilyBaseHelp'|translate }}</span>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col s12 m5">
+                <label for="ct-shape-roundness">{{ 'CustomTheme_ShapeRoundnessLabel'|translate }}</label>
+                <select id="ct-shape-roundness" class="browser-default ct-text-input">
+                    {% for key, cssRadius in shapeRoundnessOptions %}
+                        <option value="{{ key|e('html_attr') }}" {% if shapeRoundness == key %}selected{% endif %}>
+                            {{ ('CustomTheme_ShapeRoundness_' ~ key|capitalize)|translate }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <span class="form-description">{{ 'CustomTheme_ShapeRoundnessHelp'|translate }}</span>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col s12 m4">
+                <label for="ct-font-name">{{ 'CustomTheme_LocalFontNameLabel'|translate }}</label>
+                <input type="text" id="ct-font-name" class="browser-default ct-text-input"
+                       value="{{ localFontName }}"
+                       placeholder="Custom Theme Font" />
+            </div>
+            <div class="col s12 m8">
+                <form id="ct-font-upload-form" enctype="multipart/form-data" class="ct-inline-form">
+                    <input type="file" name="font" id="ct-font-file" accept=".woff2,.woff,.ttf,.otf" class="browser-default" />
+                    <button type="submit" class="btn">{{ 'CustomTheme_UploadFont'|translate }}</button>
+                    {% if localFontPath %}
+                    <button type="button" class="btn" id="ct-remove-font-btn">{{ 'CustomTheme_RemoveFont'|translate }}</button>
+                    {% endif %}
+                </form>
+                <span class="form-description">
+                    {{ 'CustomTheme_LocalFontHelp'|translate }}
+                    {% if localFontPath %}
+                        <br /><strong>{{ 'CustomTheme_CurrentLocalFont'|translate }}:</strong> {{ localFontName }} ({{ localFontPath }})
+                    {% endif %}
+                </span>
+                <span id="ct-status-font-upload" class="ct-status"></span>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col s12" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <button type="button" class="btn" id="ct-save-typography-btn">{{ 'CustomTheme_SaveTypography'|translate }}</button>
+                <span id="ct-status-typography" class="ct-status"></span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+window.customThemeConfig = {
+    phpUploadMaxBytes: {{ phpUploadMaxBytes|json_encode|raw }},
+    uploadNonce: {{ uploadNonce|json_encode|raw }},
+    strings: {
+        saved:        {{ 'CustomTheme_SavedSuccess'|translate|json_encode|raw }},
+        saveError:    {{ 'CustomTheme_SaveError'|translate|json_encode|raw }},
+        uploaded:     {{ 'CustomTheme_UploadSuccess'|translate|json_encode|raw }},
+        uploadError:  {{ 'CustomTheme_UploadError'|translate|json_encode|raw }},
+        resetSuccess: {{ 'CustomTheme_ResetSuccess'|translate|json_encode|raw }},
+        resetConfirm: {{ 'CustomTheme_ResetConfirm'|translate|json_encode|raw }},
+        saving:       {{ 'CustomTheme_Saving'|translate|json_encode|raw }},
+        uploading:    {{ 'CustomTheme_Uploading'|translate|json_encode|raw }}
+    }
+};
+</script>
+{% endblock %}
