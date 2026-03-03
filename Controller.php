@@ -99,7 +99,7 @@ class Controller extends ControllerAdmin
         $ext     = $this->mimeToExt($mime);
         $destDir = PIWIK_INCLUDE_PATH . '/plugins/CustomTheme/data/background/';
 
-        foreach (glob($destDir . '*') ?: [] as $old) {
+        foreach (glob($destDir . 'bg.*') ?: [] as $old) {
             if (is_file($old)) {
                 @unlink($old);
             }
@@ -148,6 +148,10 @@ class Controller extends ControllerAdmin
             exit;
         }
 
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
         $mime = $this->detectMimeType($absolutePath);
         header('Content-Type: ' . $mime);
         header('Content-Length: ' . (string) filesize($absolutePath));
@@ -185,6 +189,10 @@ class Controller extends ControllerAdmin
             exit;
         }
 
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
         $ext  = strtolower((string) pathinfo($absolutePath, PATHINFO_EXTENSION));
         $mime = match ($ext) {
             'woff2' => 'font/woff2',
@@ -210,7 +218,7 @@ class Controller extends ControllerAdmin
         Nonce::checkNonce(self::NONCE_NAME, $_POST['nonce'] ?? '');
 
         $destDir = PIWIK_INCLUDE_PATH . '/plugins/CustomTheme/data/background/';
-        foreach (glob($destDir . '*') ?: [] as $file) {
+        foreach (glob($destDir . 'bg.*') ?: [] as $file) {
             if (is_file($file)) {
                 @unlink($file);
             }
@@ -263,7 +271,7 @@ class Controller extends ControllerAdmin
         if (!is_dir($destDir)) {
             @mkdir($destDir, 0755, true);
         }
-        foreach (glob($destDir . '*') ?: [] as $old) {
+        foreach (glob($destDir . 'custom-font.*') ?: [] as $old) {
             if (is_file($old)) {
                 @unlink($old);
             }
@@ -301,7 +309,7 @@ class Controller extends ControllerAdmin
         Nonce::checkNonce(self::NONCE_NAME, $_POST['nonce'] ?? '');
 
         $destDir = PIWIK_INCLUDE_PATH . '/plugins/CustomTheme/data/fonts/';
-        foreach (glob($destDir . '*') ?: [] as $file) {
+        foreach (glob($destDir . 'custom-font.*') ?: [] as $file) {
             if (is_file($file)) {
                 @unlink($file);
             }

@@ -179,12 +179,12 @@ class API extends BaseAPI
         $bgDir = PIWIK_INCLUDE_PATH . '/plugins/CustomTheme/data/background/';
         $fontDir = PIWIK_INCLUDE_PATH . '/plugins/CustomTheme/data/fonts/';
 
-        foreach (glob($bgDir . '*') ?: [] as $file) {
+        foreach (glob($bgDir . 'bg.*') ?: [] as $file) {
             if (is_file($file)) {
                 @unlink($file);
             }
         }
-        foreach (glob($fontDir . '*') ?: [] as $file) {
+        foreach (glob($fontDir . 'custom-font.*') ?: [] as $file) {
             if (is_file($file)) {
                 @unlink($file);
             }
