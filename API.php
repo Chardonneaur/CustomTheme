@@ -41,15 +41,11 @@ class API extends BaseAPI
         $settings = new SystemSettings();
 
         return [
-            'colors'                    => $settings->getStoredColors(),
-            'backgroundImagePath'       => (string) $settings->backgroundImagePath->getValue(),
-            'backgroundStyle'           => (string) $settings->backgroundStyle->getValue(),
-            'backgroundOverlayOpacity'  => (string) $settings->backgroundOverlayOpacity->getValue(),
-            'backgroundBlur'            => (string) $settings->backgroundBlur->getValue(),
-            'fontFamilyBase'            => (string) $settings->fontFamilyBase->getValue(),
-            'shapeRoundness'            => (string) $settings->shapeRoundness->getValue(),
-            'localFontName'             => (string) $settings->localFontName->getValue(),
-            'localFontPath'             => (string) $settings->localFontPath->getValue(),
+            'colors'         => $settings->getStoredColors(),
+            'fontFamilyBase' => (string) $settings->fontFamilyBase->getValue(),
+            'shapeRoundness' => (string) $settings->shapeRoundness->getValue(),
+            'localFontName'  => (string) $settings->localFontName->getValue(),
+            'localFontPath'  => (string) $settings->localFontPath->getValue(),
         ];
     }
 
@@ -123,34 +119,6 @@ class API extends BaseAPI
     }
 
     /**
-     * Save background display settings (not the image itself — that is uploaded via Controller).
-     *
-     * @param string $style    cover|contain|repeat
-     * @param string $opacity  float 0–0.9 as a string
-     * @param string $blur     int 0–20 as a string
-     * @return bool
-     */
-    public function saveBackgroundSettings(string $style = 'cover', string $opacity = '0.3', string $blur = '0'): bool
-    {
-        Piwik::checkUserHasSuperUserAccess();
-
-        $allowedStyles = ['cover', 'contain', 'repeat'];
-        if (!in_array($style, $allowedStyles, true)) {
-            $style = 'cover';
-        }
-        $opacityVal = max(0, min(0.9, (float) $opacity));
-        $blurVal    = max(0, min(20, (int) $blur));
-
-        $settings = new SystemSettings();
-        $settings->backgroundStyle->setValue($style);
-        $settings->backgroundOverlayOpacity->setValue((string) $opacityVal);
-        $settings->backgroundBlur->setValue((string) $blurVal);
-        $settings->save();
-
-        return true;
-    }
-
-    /**
      * Reset all theme settings to Matomo defaults.
      *
      * @return bool
@@ -165,25 +133,14 @@ class API extends BaseAPI
             $settings->$prop->setValue('');
         }
 
-        $settings->backgroundImagePath->setValue('');
-        $settings->backgroundStyle->setValue('cover');
-        $settings->backgroundOverlayOpacity->setValue('0.3');
-        $settings->backgroundBlur->setValue('0');
         $settings->fontFamilyBase->setValue('');
         $settings->shapeRoundness->setValue('medium');
         $settings->localFontName->setValue('');
         $settings->localFontPath->setValue('');
         $settings->save();
 
-        // Remove uploaded files
-        $bgDir = PIWIK_INCLUDE_PATH . '/plugins/CustomTheme/data/background/';
+        // Remove uploaded font file
         $fontDir = PIWIK_INCLUDE_PATH . '/plugins/CustomTheme/data/fonts/';
-
-        foreach (glob($bgDir . 'bg.*') ?: [] as $file) {
-            if (is_file($file)) {
-                @unlink($file);
-            }
-        }
         foreach (glob($fontDir . 'custom-font.*') ?: [] as $file) {
             if (is_file($file)) {
                 @unlink($file);

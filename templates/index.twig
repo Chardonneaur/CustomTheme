@@ -72,65 +72,7 @@
     </div>
 
     {# ============================================================
-       SECTION 2 — BACKGROUND IMAGE
-       ============================================================ #}
-    <div vue-entry="CoreHome.ContentBlock" content-title="{{ 'CustomTheme_SectionBackground'|translate }}">
-        <p>{{ 'CustomTheme_SectionBackgroundDesc'|translate }}</p>
-        <p>{{ 'CustomTheme_SectionBackgroundHowto'|translate }}</p>
-
-        <div id="ct-bg-preview" class="form-group row" {% if backgroundProxyUrl == '' %}style="display:none;"{% endif %}>
-            <div class="col s12" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-                <img src="{{ backgroundProxyUrl }}" alt="" class="ct-bg-thumbnail" />
-                <button type="button" class="btn" id="ct-remove-bg-btn">{{ 'CustomTheme_RemoveBackground'|translate }}</button>
-            </div>
-        </div>
-
-        <form id="ct-bg-upload-form" enctype="multipart/form-data">
-            <div class="form-group row">
-                <div class="col s12 m8" style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;">
-                    <input type="file" name="background" id="ct-bg-file" accept="image/png,image/jpeg,image/gif,image/webp" class="browser-default" style="flex:1;min-width:200px;" />
-                    <button type="submit" class="btn">{{ 'CustomTheme_UploadImage'|translate }}</button>
-                </div>
-            </div>
-        </form>
-        <div class="form-group row">
-            <div class="col s12">
-                <span id="ct-status-bg-upload" class="ct-status"></span>
-            </div>
-        </div>
-
-        <div class="form-group row">
-            <div class="col s12 m4">
-                <label for="ct-bg-style">{{ 'CustomTheme_BackgroundStyleLabel'|translate }}</label>
-                <select id="ct-bg-style" class="browser-default">
-                    <option value="cover"   {% if backgroundStyle == 'cover' %}selected{% endif %}>{{ 'CustomTheme_BackgroundStyleCover'|translate }}</option>
-                    <option value="contain" {% if backgroundStyle == 'contain' %}selected{% endif %}>{{ 'CustomTheme_BackgroundStyleContain'|translate }}</option>
-                    <option value="repeat"  {% if backgroundStyle == 'repeat' %}selected{% endif %}>{{ 'CustomTheme_BackgroundStyleRepeat'|translate }}</option>
-                </select>
-                <span class="form-description">{{ 'CustomTheme_SectionBackgroundStyleHelp'|translate }}</span>
-            </div>
-            <div class="col s12 m4">
-                <label for="ct-overlay-opacity">{{ 'CustomTheme_OverlayOpacity'|translate }}: <strong><span id="ct-opacity-val">{{ backgroundOverlayOpacity }}</span></strong></label>
-                <input type="range" id="ct-overlay-opacity" min="0" max="0.9" step="0.05" value="{{ backgroundOverlayOpacity }}" class="browser-default" />
-                <span class="form-description">{{ 'CustomTheme_SectionBackgroundOverlayHelp'|translate }}</span>
-            </div>
-            <div class="col s12 m4">
-                <label for="ct-blur">{{ 'CustomTheme_BlurAmount'|translate }}: <strong><span id="ct-blur-val">{{ backgroundBlur }}</span> px</strong></label>
-                <input type="range" id="ct-blur" min="0" max="20" step="1" value="{{ backgroundBlur }}" class="browser-default" />
-                <span class="form-description">{{ 'CustomTheme_SectionBackgroundBlurHelp'|translate }}</span>
-            </div>
-        </div>
-
-        <div class="form-group row">
-            <div class="col s12" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                <button type="button" class="btn" id="ct-save-bg-btn">{{ 'CustomTheme_SaveBackgroundSettings'|translate }}</button>
-                <span id="ct-status-bg" class="ct-status"></span>
-            </div>
-        </div>
-    </div>
-
-    {# ============================================================
-       SECTION 3 — TYPOGRAPHY
+       SECTION 2 — TYPOGRAPHY
        ============================================================ #}
     <div vue-entry="CoreHome.ContentBlock" content-title="{{ 'CustomTheme_SectionTypography'|translate }}">
         <p>{{ 'CustomTheme_SectionTypographyDesc'|translate }}</p>
@@ -199,7 +141,6 @@
 
 <script>
 window.customThemeConfig = {
-    phpUploadMaxBytes: {{ phpUploadMaxBytes|json_encode|raw }},
     uploadNonce: {{ uploadNonce|json_encode|raw }},
     strings: {
         saved:        {{ 'CustomTheme_SavedSuccess'|translate|json_encode|raw }},

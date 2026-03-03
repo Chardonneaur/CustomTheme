@@ -46,13 +46,7 @@ class SystemSettings extends \Piwik\Settings\Plugin\SystemSettings
     public SystemSetting $colorCodeBackground;
     public SystemSetting $colorLinkHover;
     public SystemSetting $colorHeaderHoverBackground;
-    public SystemSetting $colorBackgroundOverlayTint;
 
-    /** Background image settings */
-    public SystemSetting $backgroundImagePath;
-    public SystemSetting $backgroundStyle;
-    public SystemSetting $backgroundOverlayOpacity;
-    public SystemSetting $backgroundBlur;
     public SystemSetting $fontFamilyBase;
     public SystemSetting $shapeRoundness;
     public SystemSetting $localFontName;
@@ -96,7 +90,6 @@ class SystemSettings extends \Piwik\Settings\Plugin\SystemSettings
     public static array $advancedColorProperties = [
         'colorLinkHover',
         'colorHeaderHoverBackground',
-        'colorBackgroundOverlayTint',
     ];
 
     /**
@@ -286,46 +279,6 @@ class SystemSettings extends \Piwik\Settings\Plugin\SystemSettings
                 }
             );
         }
-
-        $this->backgroundImagePath = $this->makeSetting(
-            'backgroundImagePath',
-            '',
-            FieldConfig::TYPE_STRING,
-            function (FieldConfig $field) {
-                $field->title     = 'Background image path';
-                $field->uiControl = FieldConfig::UI_CONTROL_TEXT;
-            }
-        );
-
-        $this->backgroundStyle = $this->makeSetting(
-            'backgroundStyle',
-            'cover',
-            FieldConfig::TYPE_STRING,
-            function (FieldConfig $field) {
-                $field->title     = 'Background style';
-                $field->uiControl = FieldConfig::UI_CONTROL_TEXT;
-            }
-        );
-
-        $this->backgroundOverlayOpacity = $this->makeSetting(
-            'backgroundOverlayOpacity',
-            '0.3',
-            FieldConfig::TYPE_STRING,
-            function (FieldConfig $field) {
-                $field->title     = 'Background overlay opacity';
-                $field->uiControl = FieldConfig::UI_CONTROL_TEXT;
-            }
-        );
-
-        $this->backgroundBlur = $this->makeSetting(
-            'backgroundBlur',
-            '0',
-            FieldConfig::TYPE_STRING,
-            function (FieldConfig $field) {
-                $field->title     = 'Background blur (px)';
-                $field->uiControl = FieldConfig::UI_CONTROL_TEXT;
-            }
-        );
 
         $this->fontFamilyBase = $this->makeSetting(
             'fontFamilyBase',

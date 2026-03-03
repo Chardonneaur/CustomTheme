@@ -16,12 +16,6 @@ use Piwik\View;
 
 class Controller extends ControllerAdmin
 {
-    private const ALLOWED_MIME_TYPES = [
-        'image/png', 'image/jpeg', 'image/gif', 'image/webp',
-        // SVG intentionally excluded: SVGs can contain inline <script> and event handlers
-        // which execute when the file is served directly from the webroot.
-    ];
-
     private const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
     private const NONCE_NAME    = 'CustomTheme.upload';
     private const ALLOWED_FONT_EXTENSIONS = ['woff2', 'woff', 'ttf', 'otf'];
@@ -39,126 +33,20 @@ class Controller extends ControllerAdmin
 
         $view = new View('@CustomTheme/index');
         $this->setBasicVariablesView($view);
-        $view->colorProperties          = SystemSettings::$colorProperties;
-        $view->advancedColorProperties  = SystemSettings::$advancedColorProperties;
-        $view->storedColors             = $storedColors;
-        $view->colorFieldDetails        = SystemSettings::getColorFieldDetails();
+        $view->colorProperties           = SystemSettings::$colorProperties;
+        $view->advancedColorProperties   = SystemSettings::$advancedColorProperties;
+        $view->storedColors              = $storedColors;
+        $view->colorFieldDetails         = SystemSettings::getColorFieldDetails();
         $view->advancedColorFieldDetails = SystemSettings::getAdvancedColorFieldDetails();
-        $hasBackground                  = (string) $settings->backgroundImagePath->getValue() !== '';
-        $view->backgroundImagePath      = (string) $settings->backgroundImagePath->getValue();
-        $view->backgroundProxyUrl       = $hasBackground ? 'index.php?module=CustomTheme&action=serveBackground' : '';
-        $view->backgroundStyle          = (string) $settings->backgroundStyle->getValue();
-        $view->backgroundOverlayOpacity = (string) $settings->backgroundOverlayOpacity->getValue();
-        $view->backgroundBlur           = (string) $settings->backgroundBlur->getValue();
-        $view->fontFamilyBase           = (string) $settings->fontFamilyBase->getValue();
-        $view->fontFamilyOptions        = $this->getFontFamilyOptions((string) $settings->fontFamilyBase->getValue());
-        $view->shapeRoundness           = (string) $settings->shapeRoundness->getValue();
-        $view->shapeRoundnessOptions    = SystemSettings::getShapeRoundnessOptions();
-        $view->localFontName            = (string) $settings->localFontName->getValue();
-        $view->localFontPath            = (string) $settings->localFontPath->getValue();
-        $view->phpUploadMaxBytes        = $this->parseIniBytes(ini_get('upload_max_filesize'));
-        $view->uploadNonce              = Nonce::getNonce(self::NONCE_NAME);
+        $view->fontFamilyBase            = (string) $settings->fontFamilyBase->getValue();
+        $view->fontFamilyOptions         = $this->getFontFamilyOptions((string) $settings->fontFamilyBase->getValue());
+        $view->shapeRoundness            = (string) $settings->shapeRoundness->getValue();
+        $view->shapeRoundnessOptions     = SystemSettings::getShapeRoundnessOptions();
+        $view->localFontName             = (string) $settings->localFontName->getValue();
+        $view->localFontPath             = (string) $settings->localFontPath->getValue();
+        $view->uploadNonce               = Nonce::getNonce(self::NONCE_NAME);
 
         return $view->render();
-    }
-
-    /**
-     * Handle background image upload.
-     * Uses sendJson() + exit so Matomo's template wrapper never runs.
-     */
-    public function uploadBackground(): void
-    {
-        Piwik::checkUserHasSuperUserAccess();
-        Nonce::checkNonce(self::NONCE_NAME, $_POST['nonce'] ?? '');
-
-        if (empty($_FILES['background'])) {
-            $this->sendJson(['success' => false, 'error' => 'No file received.']);
-            return;
-        }
-
-        $uploadError = $_FILES['background']['error'];
-        if ($uploadError !== UPLOAD_ERR_OK) {
-            $this->sendJson(['success' => false, 'error' => $this->uploadErrorMessage($uploadError)]);
-            return;
-        }
-
-        $file    = $_FILES['background'];
-        $tmpPath = $file['tmp_name'];
-
-        if ($file['size'] > self::MAX_FILE_SIZE) {
-            $this->sendJson(['success' => false, 'error' => 'File too large (max 5 MB).']);
-            return;
-        }
-
-        $mime = $this->detectMimeType($tmpPath);
-        if (!in_array($mime, self::ALLOWED_MIME_TYPES, true)) {
-            $this->sendJson(['success' => false, 'error' => 'Invalid file type. Accepted: PNG, JPG, GIF, WebP.']);
-            return;
-        }
-
-        $ext     = $this->mimeToExt($mime);
-        $destDir = PIWIK_INCLUDE_PATH . '/plugins/CustomTheme/data/background/';
-
-        foreach (glob($destDir . 'bg.*') ?: [] as $old) {
-            if (is_file($old)) {
-                @unlink($old);
-            }
-        }
-
-        $destFile = $destDir . 'bg.' . $ext;
-        if (!move_uploaded_file($tmpPath, $destFile)) {
-            $this->sendJson(['success' => false, 'error' => 'Could not save the file. Check directory permissions.']);
-            return;
-        }
-
-        $webPath = 'plugins/CustomTheme/data/background/bg.' . $ext;
-        $settings = new SystemSettings();
-        $settings->backgroundImagePath->setValue($webPath);
-        $settings->save();
-
-        $this->sendJson(['success' => true, 'path' => $webPath]);
-    }
-
-    /**
-     * Serve the uploaded background image through an authenticated proxy.
-     * Requires the user to be logged in — prevents unauthenticated direct access.
-     */
-    public function serveBackground(): void
-    {
-        Piwik::checkUserHasSomeViewAccess();
-
-        $settings    = new SystemSettings();
-        $storedPath  = (string) $settings->backgroundImagePath->getValue();
-
-        if ($storedPath === '') {
-            http_response_code(404);
-            exit;
-        }
-
-        $expectedDir  = realpath(PIWIK_INCLUDE_PATH . '/plugins/CustomTheme/data/background/');
-        $absolutePath = realpath(PIWIK_INCLUDE_PATH . '/' . $storedPath);
-
-        if (
-            $absolutePath === false
-            || $expectedDir === false
-            || strncmp($absolutePath, $expectedDir . DIRECTORY_SEPARATOR, strlen($expectedDir) + 1) !== 0
-            || !is_file($absolutePath)
-        ) {
-            http_response_code(404);
-            exit;
-        }
-
-        while (ob_get_level() > 0) {
-            ob_end_clean();
-        }
-
-        $mime = $this->detectMimeType($absolutePath);
-        header('Content-Type: ' . $mime);
-        header('Content-Length: ' . (string) filesize($absolutePath));
-        header('Cache-Control: private, max-age=3600');
-        header('X-Content-Type-Options: nosniff');
-        readfile($absolutePath);
-        exit;
     }
 
     /**
@@ -207,28 +95,6 @@ class Controller extends ControllerAdmin
         header('X-Content-Type-Options: nosniff');
         readfile($absolutePath);
         exit;
-    }
-
-    /**
-     * Remove the background image.
-     */
-    public function removeBackground(): void
-    {
-        Piwik::checkUserHasSuperUserAccess();
-        Nonce::checkNonce(self::NONCE_NAME, $_POST['nonce'] ?? '');
-
-        $destDir = PIWIK_INCLUDE_PATH . '/plugins/CustomTheme/data/background/';
-        foreach (glob($destDir . 'bg.*') ?: [] as $file) {
-            if (is_file($file)) {
-                @unlink($file);
-            }
-        }
-
-        $settings = new SystemSettings();
-        $settings->backgroundImagePath->setValue('');
-        $settings->save();
-
-        $this->sendJson(['success' => true]);
     }
 
     /**
@@ -379,23 +245,6 @@ class Controller extends ControllerAdmin
             'otf'   => $magic === 'OTTO',
             default => false,
         };
-    }
-
-    private function detectMimeType(string $path): string
-    {
-        $finfo = new \finfo(FILEINFO_MIME_TYPE);
-        return $finfo->file($path) ?: '';
-    }
-
-    private function mimeToExt(string $mime): string
-    {
-        return [
-            'image/png'     => 'png',
-            'image/jpeg'    => 'jpg',
-            'image/gif'     => 'gif',
-            'image/webp'    => 'webp',
-            'image/svg+xml' => 'svg',
-        ][$mime] ?? 'bin';
     }
 
     /**

@@ -28,7 +28,6 @@ class CustomTheme extends Plugin
         // Ensure data directories exist
         $dirs = [
             PIWIK_INCLUDE_PATH . '/plugins/CustomTheme/data',
-            PIWIK_INCLUDE_PATH . '/plugins/CustomTheme/data/background',
             PIWIK_INCLUDE_PATH . '/plugins/CustomTheme/data/fonts',
         ];
         foreach ($dirs as $dir) {
@@ -87,35 +86,6 @@ class CustomTheme extends Plugin
         $css .= ".ui-dialog .ui-dialog-titlebar,.widget .widgetTop,.dataTableWrapper table thead tr,.dataTableWrapper table tbody tr:last-child td:last-child{border-top-right-radius:var(--customtheme-shape-roundness)!important;}";
         $css .= "#secondNavBar,.Menu .navbar > li > .item,.Menu .navbar > li > ul li > .item,.Menu .menuDropdown .items,.Menu .menuDropdown .title,.Menu .collapsible-header,.Menu .collapsible-body{border-radius:var(--customtheme-shape-roundness)!important;}";
 
-        $bgPath = (string) $settings->backgroundImagePath->getValue();
-        if ($bgPath !== '') {
-            $style   = (string) $settings->backgroundStyle->getValue();
-            $opacity = (float)  $settings->backgroundOverlayOpacity->getValue();
-            $blur    = (int)    $settings->backgroundBlur->getValue();
-            $overlayTint = (string) $settings->colorBackgroundOverlayTint->getValue();
-            $opacity = max(0, min(0.9, $opacity));
-            $blur    = max(0, min(20, $blur));
-            $overlayRgb = $this->hexToRgb($overlayTint) ?? [255, 255, 255];
-
-            $bgSize = 'cover';
-            $bgRepeat = 'no-repeat';
-            if ($style === 'contain') {
-                $bgSize = 'contain';
-            } elseif ($style === 'repeat') {
-                $bgSize   = 'auto';
-                $bgRepeat = 'repeat';
-            }
-
-            // Use proxy URL — direct file path never exposed to the browser
-            $bgProxyUrl = 'index.php?module=CustomTheme&action=serveBackground';
-            $css .= "body{background-image:url('" . $bgProxyUrl . "');background-size:" . $bgSize . ";background-repeat:" . $bgRepeat . ";background-attachment:fixed;background-position:center;}";
-            $css .= "body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:rgba(" . $overlayRgb[0] . "," . $overlayRgb[1] . "," . $overlayRgb[2] . "," . $opacity . ");";
-            if ($blur > 0) {
-                $css .= "backdrop-filter:blur(" . $blur . "px);-webkit-backdrop-filter:blur(" . $blur . "px);";
-            }
-            $css .= "}";
-        }
-
         $linkHover = trim((string) $settings->colorLinkHover->getValue());
         if ($linkHover !== '') {
             $safeLinkHover = htmlspecialchars($linkHover, ENT_QUOTES, 'UTF-8');
@@ -131,28 +101,6 @@ class CustomTheme extends Plugin
         if ($css !== '') {
             $output .= '<style id="customtheme-styles">' . $css . '</style>';
         }
-    }
-
-    /**
-     * @return int[]|null
-     */
-    private function hexToRgb(string $hex): ?array
-    {
-        $hex = trim($hex);
-        if (!preg_match('/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/', $hex)) {
-            return null;
-        }
-
-        $h = ltrim($hex, '#');
-        if (strlen($h) === 3) {
-            $h = $h[0] . $h[0] . $h[1] . $h[1] . $h[2] . $h[2];
-        }
-
-        return [
-            hexdec(substr($h, 0, 2)),
-            hexdec(substr($h, 2, 2)),
-            hexdec(substr($h, 4, 2)),
-        ];
     }
 
     private function fontFormatFromPath(string $path): string
